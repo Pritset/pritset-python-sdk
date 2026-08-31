@@ -16,22 +16,30 @@ def main() -> None:
             output = Path(directory)
             build_environment = dict(os.environ)
             build_environment["PIP_NO_CACHE_DIR"] = "1"
+            command = [
+                sys.executable,
+                "-m",
+                "pip",
+                "wheel",
+                ".",
+                "--no-deps",
+                "--wheel-dir",
+                str(output),
+            ]
+            if _has_build_backend():
+                command.insert(-2, "--no-build-isolation")
             subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "wheel",
-                    ".",
-                    "--no-deps",
-                    "--no-build-isolation",
-                    "--wheel-dir",
-                    str(output),
-                ],
+                command,
                 cwd=ROOT,
                 env=build_environment,
                 check=True,
-            )
+            )    
+            def _has_build_backend() -> bool:
+                try:
+                    import setuptools.build_meta  # noqa: F401
+                except ImportError:
+                    return False
+                return True
             wheels = list(output.glob("pritset-0.1.5-*.whl"))
             if len(wheels) != 1:
                 raise RuntimeError("Expected exactly one pritset 0.1.5 wheel.")
