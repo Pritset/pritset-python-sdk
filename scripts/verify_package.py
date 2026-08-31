@@ -9,6 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+def _has_build_backend() -> bool:
+    try:
+        import setuptools.build_meta  # noqa: F401
+    except ImportError:
+        return False
+    return True
 
 def main() -> None:
     try:
@@ -34,12 +40,7 @@ def main() -> None:
                 env=build_environment,
                 check=True,
             )    
-            def _has_build_backend() -> bool:
-                try:
-                    import setuptools.build_meta  # noqa: F401
-                except ImportError:
-                    return False
-                return True
+            
             wheels = list(output.glob("pritset-0.1.5-*.whl"))
             if len(wheels) != 1:
                 raise RuntimeError("Expected exactly one pritset 0.1.5 wheel.")
