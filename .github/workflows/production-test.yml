@@ -1,21 +1,23 @@
 name: Production test lifecycle
 
 on:
-  workflow_dispatch:
-    inputs:
-      confirmation:
-        description: Type RUN-PRODUCTION-TEST
-        required: true
-        type: string
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
 
+concurrency:
+  group: pritset-python-sdk-production-test
+  cancel-in-progress: false
+
 jobs:
   lifecycle:
-    if: inputs.confirmation == 'RUN-PRODUCTION-TEST'
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     environment: production-test
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
